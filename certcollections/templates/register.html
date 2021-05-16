@@ -1,0 +1,133 @@
+{% extends 'base.html' %}
+{% block title %}
+	{{mytitle}}
+{% endblock %}
+
+{% block addcss %}
+	<link rel="stylesheet" type="text/css" href="{{url_for('static',filename='css/login_and_register.css')}}">
+{% endblock %}
+
+{% block content %}
+<br><br><br><br><br>
+<div class="ui middle aligned center aligned grid">
+	<div class="column">
+		<h2 class="ui blue image header">
+      		<img src="{{url_for('static',filename='img/logo.png')}}" class="image">
+      		<div class="content">
+        		Create new account	
+      		</div>
+    	</h2>
+    	<br><br>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for cat,msg in messages %}
+        <div class="ui floating message {{cat}}">
+          {{ msg }}
+        </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+    <form action="{{url_for('auth.register')}}" method="POST" class="ui large form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+      <div class="ui stacked segment">
+      	<div class="field">
+          <div class="ui left icon input">
+            <i class="user circle icon"></i>
+            <input type="text" name="username" placeholder="Username">
+          </div>
+        </div>
+        <div class="field">
+          <div class="ui left icon input">
+            <i class="user icon"></i>
+            <input type="text" name="email" placeholder="E-mail address">
+          </div>
+        </div>
+        <div class="field">
+          <div class="ui left icon input">
+            <i class="lock icon"></i>
+            <input type="password" name="password" placeholder="Password">
+          </div>
+        </div>
+         <div class="field">
+          <div class="ui left icon input">
+            <i class="lock icon"></i>
+            <input type="password" name="Cpassword" placeholder="Confirm Password">
+          </div>
+        </div>
+        <div class="ui fluid large blue submit button">Register</div>
+      </div>
+      <div class="ui error message"></div>
+    </form>
+    <div class="ui message">
+      Already have account ? <a href="{{url_for('auth.login')}}">Log In</a>
+    </div>
+    <br><br><br>
+
+	</div>
+</div>
+{% endblock %}
+
+{% block addjs %}
+	<script type="text/javascript">
+		$("input:text:visible:first").focus();
+      $('.ui.large.form')
+        .form({
+          fields: {
+          	username: {
+        		identifier: 'username',
+        		rules: [
+          		{
+            		type   : 'empty',
+            		prompt : 'Please enter your name'
+          		},
+          		{
+          			type: 'length[3]',
+          			prompt:'Username must be 3 characters long.'
+         		}
+      	  		]
+      		},
+            email: {
+              identifier  : 'email',
+              rules: [
+                {
+                  type   : 'empty',
+                  prompt : 'Please enter your e-mail'
+                },
+                {
+                  type   : 'email',
+                  prompt : 'Please enter a valid e-mail'
+                }
+              ]
+            },
+            password: {
+              identifier  : 'password',
+              rules: [
+                {
+                  type   : 'empty',
+                  prompt : 'Please enter your password'
+                },
+                {
+                  type   : 'length[6]',
+                  prompt : 'Your password must be at least 6 characters'
+                }
+              ]
+            },
+            Cpassword: {
+              identifier  : 'Cpassword',
+              rules: [
+                {
+                  type   : 'empty',
+                  prompt : 'Please enter your password'
+                },
+                {
+                  type   : 'match[password]',
+                  prompt : 'Confirm password must be equal to password'
+                }
+              ]
+            }
+          }
+        })
+      ;
+      $('form').transition('jiggle');
+	</script>
+{% endblock %}

@@ -1,0 +1,93 @@
+
+{% extends "base.html" %}
+
+{% block title %}
+{{mytitle}}
+{% endblock %}
+
+{% block addcss %}
+{% endblock %}
+
+
+{% block content %}
+<br>
+<br>
+<br>
+<div class="ui grid">
+    <div class="row">
+        <div id="avatar-section" class="column">
+            <img id="avatar-panel" class="ui middle aligned circular tiny image"
+                src="{{url_for('publicprofile.public_show_avatar',avatar=user.avatar)}}">
+            <span class="ui huge header">{{user.username}}</span>
+            <span class="ui huge header right floated">{{user.email}}</span>
+        </div>
+    </div>
+</div>
+<div class="ui divider"></div>
+
+<div id="maincontent" class="ui grid">
+    <div class="row">
+        <div class="column">
+            <div class="ui three special stackable cards">
+                {% if upldocs %}
+                {% for upldoc in upldocs %}
+
+                <div class="ui raised card">
+                <div class="blurring dimmable image">
+                        <div class="ui dimmer">
+                            <div class="content">
+                                <div class="center">
+                                    <a class="ui inverted button"
+                                        href="{{url_for('publicprofile.public_download_doc',filetodown=upldoc.location)}}"><i
+                                            class="download icon"></i></a>
+                                </div>
+                            </div>
+                        </div>
+                        <embed type="{{upldoc.doctype}}"
+                            src="{{url_for('publicprofile.public_show_doc',filetoshow=upldoc.location)}}#toolbar=0&navpanes=0"
+                            height="330vh" width="100%" frameborder="0">
+                    </div>
+                    <div class="content">
+                        <div class="header">{{upldoc.title}}</div>
+                        <div class="description">
+                            {{upldoc.description}}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+                {% else %}
+
+                <div class="ui raised card">
+                    <div class="blurring dimmable image">
+                        <div class="ui dimmer">
+                            <div class="content">
+                                <div class="center">
+                                    <div class="ui inverted button"><i class="sticky note icon"></i></div>
+                                </div>
+                            </div>
+                        </div>
+                        <embed type="" src="" height="330vh" width="100%" frameborder="0">
+                    </div>
+                    <div class="content">
+                        <div class="header">Here is nothing for you.</div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+        </div>
+    </div>
+</div>
+<br>
+<br>
+<br>
+{% endblock %}
+
+{% block addjs %}
+<script type="text/javascript">
+
+$('.special.cards .image').dimmer({
+    on: 'hover'
+});
+</script>
+{% endblock %}

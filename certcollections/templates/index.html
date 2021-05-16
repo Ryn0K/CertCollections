@@ -1,0 +1,408 @@
+{% extends "base.html" %}
+
+{% block title %}
+{{mytitle}}
+{% endblock %}
+
+{% block addcss %}
+{% if current_user.is_anonymous %}
+<style type="text/css">
+	.intro {
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		-moz-transform: translateX(-50%) translateY(-50%);
+		-webkit-transform: translateX(-50%) translateY(-50%);
+		transform: translateX(-50%) translateY(-50%);
+	}
+
+	body {
+		background-image: url("{{url_for('static',filename='img/background-min.jpg')}}");
+	}
+</style>
+{% endif %}
+
+{% if current_user.is_authenticated %}
+
+
+{% endif %}
+{% endblock %}
+
+
+{% block content %}
+
+{% if request.args.get('showmessage') %}
+<div id='showmodel' class="ui standard modal" id="showmessage">
+	<div class="ui icon header">
+		<i class="info circle icon"></i>
+		{{request.args.get('showmessage')}}
+	</div>
+	<div class="actions">
+		<div class="ui middle green ok inverted button">
+			<i class="checkmark icon"></i>
+			ok
+		</div>
+	</div>
+</div>
+{% endif %}
+
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+<div id='messagemodel' class="ui standard modal">
+	<div class="ui icon header">
+		{% for cat,msg in messages %}
+		<div class="ui floating message {{cat}}">
+			{{ msg }}
+		</div>
+		{% endfor %}
+	</div>
+	<div class="actions">
+		<div class="ui middle green ok inverted button">
+			<i class="checkmark icon"></i>
+			ok
+		</div>
+	</div>
+</div>
+{% endif %}
+{% endwith %}
+{% if current_user.is_authenticated %}
+<div class="grid">
+	<!-- model for creating new document-->
+	<div id="createnewmodel" class="ui modal">
+		<i class="close icon"></i>
+		<div class="header">
+			Create/Upload new document.
+		</div>
+		<div class="content">
+			<form id="createnewform" class="ui form" method="POST" action="{{url_for('upload.upload_form')}}"
+				enctype="multipart/form-data">
+				<input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+				<div class="field">
+					<label>Document Title</label>
+					<input type="text" name="title" id="title"
+						placeholder="Write the best suited title for this document.">
+				</div>
+				<div class="field">
+					<label>Document Description</label>
+					<textarea name="description" rows="5" id="description"
+						placeholder="Description of this document."></textarea>
+				</div>
+				<div class="field">
+					<label>Upload Doc</label>
+					<span>(.pdf,.jpeg,.png,.jpg,.docx)</span>
+					<input type="file" name="doc">
+				</div>
+
+				<div class="ui error message"></div>
+			</form>
+
+		</div>
+		<div class="actions">
+			<button class="ui negative red button">Cancel</button>
+			<button form="createnewform" id="createnew" type="submit" class="ui green button">Create</button>
+		</div>
+	</div>
+	<!-- model ends-->
+	<br><br><br>
+	{% if current_user.is_authenticated %}
+
+	<div class="ui grid">
+		<div class="row">
+			<div id="avatar-section" class="column">
+				<img id="avatar-panel" class="ui middle aligned circular tiny image"
+					src="{{url_for('upload.show_avatar')}}">
+				<span class="ui huge header">{{current_user.username}}</span>
+				
+                <a href="{{url_for('publicprofile.show_public_profile',userid=current_user.id)}}"
+                    class="ui right floated middle aligned primary button" target="_blank">
+                    <i class="eye icon"></i>
+					Public Profile
+                </a>
+				<button onclick="$('#createnewmodel').modal('show');"
+					class="ui right floated middle aligned primary button">
+					<i class="plus icon"></i>
+					Create New
+				</button>
+			</div>
+		</div>
+		<div class="row">
+			<div id="showprivacymsg" class="ui message transition green hidden">
+				<i class="close icon"></i>
+				<div class="header">
+					Privacy switching successfull.
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="ui divider"></div>
+	<div id="maincontent" class="ui grid">
+		<div class="row">
+			<div class="column">
+				<div class="ui three special stackable cards">
+					{% if upldocs %}
+					{% for upldoc in upldocs %}
+
+					<div class="ui raised card">
+
+						<div id="edit_model_{{upldoc.id}}" class="ui modal">
+							<i class="close icon"></i>
+							<div class="header">
+								Edit your document data.
+							</div>
+							<div class="content">
+								<form id="editform_{{upldoc.id}}" class="ui form editform" method="POST"
+									action="{{url_for('upload.edit_doc')}}" enctype="multipart/form-data">
+									<input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+									<input type="hidden" name="docid" value="{{upldoc.id}}">
+									<div class="field">
+										<label>Document Title</label>
+										<input type="text" name="edittitle" id="edittitle_{{upldoc.id}}"
+											value="{{upldoc.title}}">
+									</div>
+									<div class="field">
+										<label>Document Description</label>
+										<input name="editdescription" rows="5" id="editdescription_{{upldoc.id}}"
+											value="{{upldoc.description}}">
+									</div>
+
+									<div class="field">
+										<label>Change document file.</label>
+										<input type="file" name="editdoc">
+									</div>
+
+									<div class="ui error message"></div>
+								</form>
+
+							</div>
+							<div class="actions">
+								<button class="ui negative red button">Cancel</button>
+								<button form="editform_{{upldoc.id}}" type="submit"
+									class="ui green button">Edit</button>
+							</div>
+						</div>
+						<div id="delete_{{upldoc.id}}" class="ui mini test modal">
+							<div class="header">
+								Delete Your Document
+							</div>
+							<div class="content">
+								<p>Are you sure you want to delete this document.</p>
+							</div>
+							<div class="actions">
+								<a class="ui negative button">
+									No
+								</a>
+								<a href="{{url_for('upload.delete_doc',id=upldoc.id)}}"
+									class="ui positive right labeled icon button">
+									Yes
+									<i class="checkmark icon"></i>
+								</a>
+							</div>
+						</div>
+
+						<div class="content">
+							<div class="right floated">
+								<div class="ui toggle checkbox">
+								{%if upldoc.private %}
+									<input type="checkbox" name="privacy_status" value="{{upldoc.id}}" checked>
+								{%else%}
+									<input type="checkbox" name="privacy_status" value="{{upldoc.id}}">
+								{%endif%}
+									<label>Private</label>
+								</div>	
+							</div>
+						</div>
+						<div class="blurring dimmable image">
+							<div class="ui dimmer">
+								<div class="content">
+									<div class="center">
+										<a class="ui inverted button"
+											href="{{url_for('upload.download_doc',filetodown=upldoc.location)}}"><i
+												class="download icon"></i></a>
+									</div>
+								</div>
+							</div>
+							<embed type="{{upldoc.doctype}}"
+								src="{{url_for('upload.show_doc',filetoshow=upldoc.location)}}#toolbar=0&navpanes=0"
+								height="330vh" width="100%" frameborder="0">
+						</div>
+						<div class="content">
+							<div class="header">{{upldoc.title}}</div>
+							<div class="description">
+								{{upldoc.description}}
+							</div>
+						</div>
+						<div class="extra content">
+							<a onclick="$('#delete_{{upldoc.id}}').not('.basic').modal('show')" class="right floated">
+								<i class="large trash alternate icon red"></i>
+							</a>
+							<a onclick="$('#edit_model_{{upldoc.id}}').modal('show');">
+								<i class="large edit icon blue"></i>
+							</a>
+						</div>
+					</div>
+					{% endfor %}
+					{% else %}
+
+					<div class="ui raised card">
+						<div class="blurring dimmable image">
+							<div class="ui dimmer">
+								<div class="content">
+									<div class="center">
+										<div class="ui inverted button"><i class="sticky note icon"></i></div>
+									</div>
+								</div>
+							</div>
+							<embed type="" src="" height="330vh" width="100%" frameborder="0">
+						</div>
+						<div class="content">
+							<div class="header">You upload nothing,click create new to upload your doc.</div>
+						</div>
+					</div>
+					{% endif %}
+				</div>
+
+			</div>
+		</div>
+	</div>
+	<br>
+	<br>
+	<br>
+	{% endif %}
+
+</div>
+{% else %}
+
+<div class="intro">
+	<div class="ui internally celled grid">
+		<div class="row">
+			<p id="introtext" class="ui huge header dividing inverted">Website to <span id="changetext"></span>your
+				certs, docs and digital credentials.</p>
+		</div>
+		<br>
+		<div class="row">
+			<a id="letsgetstartedbutton" href="{{url_for('auth.login')}}" class="ui huge primary button">Lets get
+				started</a>
+		</div>
+	</div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block addjs %}
+{% if current_user.is_anonymous %}
+<!-- Typedjs for typewriting effect -->
+<script src="https://unpkg.com/typewriter-effect@latest/dist/core.js"></script>
+<!-- typewritting effect -->
+
+<script type="text/javascript">
+
+
+	new Typewriter('#changetext', {
+		strings: ['store', 'manage', 'share'],
+		autoStart: true,
+		loop: true
+	});
+</script>
+<!-- Another transition effect -->
+<script type="text/javascript">
+	$(document).ready(function () {
+		$('#letsgetstartedbutton').transition('jiggle');
+		$('#introtext').transition('jiggle');
+	});
+</script>
+{% endif %}
+{% if current_user.is_authenticated %}
+<script type="text/javascript">
+	$(document).ready(function () {
+		$('.card').transition('jiggle')
+	});
+</script>
+{% endif %}
+{% if request.args.get('showmessage') %}
+<script type="text/javascript">
+	$('#showmodel')
+		.modal('show')
+		;
+</script>
+{% endif %}
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+<script type="text/javascript">
+	$('#messagemodel').modal('show');
+</script>
+{% endif %}
+{% endwith %}
+{% if current_user.is_authenticated %}
+<script type="text/javascript">
+	$('#createnewform').form(
+		{
+			fields: {
+				title: {
+					identifier: 'title',
+					rules: [
+						{
+							type: 'empty',
+							prompt: 'Please enter title for document if any.'
+						}
+					]
+				},
+				description: {
+					identifier: 'description',
+					rules: [
+						{
+							type: 'empty',
+							prompt: 'Please enter description for document if any.'
+
+						}
+					]
+				},
+				doc: {
+					identifier: 'doc',
+					rules: [
+						{
+							type: 'empty',
+							prompt: 'Please upload a file'
+						}
+					]
+				}
+			}
+
+		}
+	);
+
+	$('.special.cards .image').dimmer({
+		on: 'hover'
+	});
+	$(document).ready(function(){
+		$(':checkbox').change(function(){
+			var docid = $(this).val();
+			if ($(this).prop('checked')){
+				$.ajax({
+					type:"GET",
+					url:"/switch_private/"+docid,
+					success:function(data){
+						$('#showprivacymsg').removeClass('hidden');
+					}
+				});
+			}
+			else{
+				$.ajax({
+					type:"GET",
+					url:"/switch_public/"+docid,
+					success:function(data){
+						$('#showprivacymsg').removeClass('hidden');
+					}
+				});
+			}
+		});
+	});
+	$('#showprivacymsg .close')
+		.on('click', function() {
+			$(this).closest('.message').transition('fade');
+	});
+
+</script>
+{% endif %}
+{% endblock %}

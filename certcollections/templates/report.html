@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+{% block title %}{{mytitle}}{% endblock %}
+
+
+{% block addcss %}
+	<link rel="stylesheet" type="text/css" href="{{url_for('static',filename='css/login_and_register.css')}}">
+{% endblock %}
+
+{% block content %}
+<br><br><br><br><br>
+<div class="ui middle aligned center aligned grid">
+	<div class="column" id="issueform">
+		<h2 class="ui blue image header">
+      		<img src="{{url_for('static',filename='img/logo.png')}}" class="image">
+      		<div class="content">
+                  If you have any trouble feel free to report us.
+            </div>
+    	</h2>
+    	<br><br>
+      {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for cat,msg in messages %}
+        <div id="messages" class="ui floating message {{cat}}">
+          {{ msg }}
+        </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+    	<form method="POST" action="{{url_for('report.issuereport_post')}}" class="ui large form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+      <div class="ui stacked segment">
+        <div class="field">
+            <div class="ui left icon input">
+              <i class="user circle icon"></i>
+              <input type="text" name="name" placeholder="Your Name">
+            </div>
+          </div>
+        <div class="field">
+          <div class="ui left icon input">
+            <i class="user icon"></i>
+            <input type="text" name="email" placeholder="Your Email Address.">
+          </div>
+        </div>
+        <div class="field">
+            <textarea rows="10" cols="60" placeholder="Your Issue" name="issue"></textarea>
+        </div> 
+        <div class="ui fluid large blue submit button">Submit</div>
+      </div>
+      <div class="ui error message"></div>
+    </form>
+    <br>
+    <div class="ui message">
+      <a href="{{url_for('main.index')}}">back to main</a>
+    </div>
+    <br><br><br>
+
+	</div>
+</div>
+{% endblock %}
+
+{% block addjs %}
+	<script type="text/javascript">
+		$("input:text:visible:first").focus();
+    $('.ui.large.form')
+        .form({
+          fields: {
+            name:{
+              identifier: 'name',
+              rules:[
+                {
+                  type   : 'empty',
+                  prompt : 'Please enter your name.'
+                }
+              ]
+            },
+            email: {
+              identifier  : 'email',
+              rules: [
+                {
+                  type   : 'empty',
+                  prompt : 'Please enter your e-mail'
+                },
+                {
+                  type   : 'email',
+                  prompt : 'Please enter a valid e-mail'
+                }
+              ]
+            },
+            issue: {
+              identifier  : 'issue',
+              rules: [
+                {
+                  type   : 'empty',
+                  prompt : 'Please provide some issue to work on.'
+                }
+              ]
+            }
+          }
+        })
+      ;
+      $('form').transition('jiggle');
+	</script>
+{% endblock %}

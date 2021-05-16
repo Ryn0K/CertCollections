@@ -1,0 +1,26 @@
+<div class="ui top fixed large menu">
+  <div class="ui container">
+    <a href="{{url_for('main.index')}}" class="header item">
+      <img class="logo" src="{{url_for('static',filename='img/logo.png')}}">
+      CertCollections
+    </a>
+    <a href="{{url_for('report.issuereport')}}" class="item"><i class="bug icon"></i>Report issue</a>
+
+  </div>
+  <div class="ui item">
+    {% if current_user.is_authenticated %}
+    <div class="ui compact menu">
+      <div class="ui simple dropdown item">
+        <img class="ui mini spaced circular image" src="{{url_for('upload.show_avatar')}}">
+        {{current_user.username}}
+        <div class="menu">
+          <a class="item" href="{{url_for('userprofile.useredit')}}"><i class="edit icon"></i>Profile</a>
+          <a class="item" href="{{url_for('auth.logout')}}"><i class="sign-out icon"></i>Logout</a>
+        </div>
+      </div>
+    </div>
+    {% else %}
+    <a class="ui primary button right" href="{{url_for('auth.login')}}">Log In/Sign Up</a>
+    {% endif %}
+  </div>
+</div>

@@ -1,0 +1,194 @@
+{%extends 'base.html'%}
+{%block title%}{{mytitle}}{%endblock%}
+
+{% block addcss %}
+<link rel="stylesheet" type="text/css" href="{{url_for('static',filename='css/login_and_register.css')}}">
+{% if current_user.is_authenticated %}
+{{ dropzone.load_css() }}
+{{ dropzone.style('border: 2px dashed #0087F7; margin: 20%; min-height: 75px;') }}
+
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<br><br><br><br><br>
+<div class="ui middle aligned center aligned grid">
+	<div class="column">
+		<h2 class="ui blue image header">
+			<img src="{{url_for('static',filename='img/logo.png')}}" class="image">
+			<div class="content">
+				Update your profile username,email and password.
+			</div>
+		</h2>
+		{% with messages = get_flashed_messages(with_categories=true) %}
+		{% if messages %}
+		{% for cat,msg in messages %}
+		<div class="ui floating message {{cat}}">
+			{{ msg }}
+		</div>
+		{% endfor %}
+		{% endif %}
+		{% endwith %}
+		<div class="ui mini test modal">
+			<div class="header">
+				Delete Your Account
+			</div>
+			<div class="content">
+				<p>Are you sure you want to delete your account,This is will delete all things belong to you.</p>
+			</div>
+			<div class="actions">
+				<a class="ui negative button">
+					No
+				</a>
+				<a href="{{url_for('userprofile.deleteuser',userid=current_user.id)}}"
+					class="ui positive right labeled icon button">
+					Yes
+					<i class="checkmark icon"></i>
+				</a>
+			</div>
+		</div>
+		<div id="avatarchangingmodel" class="ui modal">
+			<i class="close icon"></i>
+			<div class="header">
+				Change your profile picture.
+			</div>
+			<div class="content">
+				<a href="{{url_for('upload.switch_default')}}"><i class="reply icon"></i> switch back to default profile picture.</a>
+				{{ dropzone.create(action='upload.upload_avatar') }}
+				<div class="description">
+					<p>Login again for reflect changes immediately.</p>
+				</div>
+			</div>
+			<div class="actions">
+				<button class="ui red deny button">
+					cancel
+				</button>
+				<button id="saveprofile" href="{{url_for('auth.logout')}}" class="ui positive right labeled icon button">
+					Save changes
+					<i class="checkmark icon"></i>
+				</button>
+			</div>
+		</div>
+		<img onclick="$('#avatarchangingmodel').modal('show');" class="ui middle aligned circular small image"
+			src="{{url_for('upload.show_avatar')}}">
+		<div class="ui floating message">
+			<p>Tap the avatar to change it.</p>
+		</div>
+		<form action="{{url_for('userprofile.useredit')}}" method="POST" class="ui large form">
+			<input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+			<div class="ui stacked segment">
+				<div class="field">
+					<div class="ui left icon input">
+						<i class="user circle icon"></i>
+						<input type="text" name="username" placeholder="Username" value="{{current_user.username}}">
+					</div>
+				</div>
+				<div class="field">
+					<div class="ui left icon input">
+						<i class="user icon"></i>
+						<input type="text" name="email" placeholder="E-mail address" value="{{current_user.email}}">
+					</div>
+				</div>
+				<div class="field">
+					<div class="ui left icon input">
+						<i class="lock icon"></i>
+						<input type="password" name="newpassword" placeholder="New Password">
+					</div>
+				</div>
+				<div class="field">
+					<div class="ui left icon input">
+						<i class="lock icon"></i>
+						<input type="password" name="Cnewpassword" placeholder="Confirm New Password">
+					</div>
+				</div>
+				<div class="field">
+					<div class="ui left icon input">
+						<i class="lock icon"></i>
+						<input type="password" name="oldpassword" placeholder="Old password required to save changes.">
+					</div>
+				</div>
+				<div class="ui fluid large blue submit button">Update Profile</div>
+				<a onclick="$('.mini.test.modal').not('.basic').modal('show')" class="ui fluid large red button">Delete
+					Account</a>
+			</div>
+			<div class="ui error message"></div>
+		</form>
+		<div class="ui message">
+			<a href="{{url_for('main.index')}}">back to dashboard</a>
+		</div>
+		<br><br><br>
+
+	</div>
+</div>
+{% endblock %}
+
+{% block addjs %}
+<script type="text/javascript">
+	$("input:text:visible:first").focus();
+
+	$(document)
+		.ready(function () {
+			$('.ui.large.form')
+				.form({
+					fields: {
+						username: {
+							identifier: 'username',
+							rules: [
+								{
+									type: 'empty',
+									prompt: 'Please enter your name'
+								},
+								{
+									type: 'length[3]',
+									prompt: 'Username must be 3 characters long.'
+								}
+							]
+						},
+						email: {
+							identifier: 'email',
+							rules: [
+								{
+									type: 'empty',
+									prompt: 'Please enter your e-mail'
+								},
+								{
+									type: 'email',
+									prompt: 'Please enter a valid e-mail'
+								}
+							]
+						},
+						newpassword: {
+							identifier: 'newpassword'
+						},
+						Cnewpassword: {
+							identifier: 'Cnewpassword',
+							rules: [
+								{
+									type: 'match[newpassword]',
+									prompt: 'Confirm New password must be equal to password'
+								}
+							]
+						}
+						,
+						oldpassword: {
+							identifier: 'oldpassword',
+							rules: [
+								{
+									type: 'empty',
+									prompt: 'Old password is required to save all changes.'
+								}
+							]
+						}
+					}
+				})
+				;
+			$('form').transition('jiggle');
+		})
+		;
+</script>
+{% if current_user.is_authenticated %}
+{{ dropzone.load_js() }}
+{{ dropzone.config(max_files=1, timeout=10000, default_message='Edit,upload or drop your avatar
+!',allowed_file_type='.jpeg,.jpg,.png',enable_csrf=true,custom_init='dz = this;document.getElementById("saveprofile").addEventListener("click", function handler(e) {dz.processQueue();});',custom_options='autoProcessQueue: false, addRemoveLinks: true') }}
+{% endif %}
+{% endblock %}
