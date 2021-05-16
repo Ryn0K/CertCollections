@@ -30,7 +30,7 @@ chmod +x runner.sh
 
 5. Now server should be running.
 
-![image showing running server](https://imgur.com/Tsa2Lmz)
+!(image showing running server)[https://imgur.com/Tsa2Lmz]
 
 6. Navigate to [http://127.0.0.1:5000](http://127.0.0.1:5000) to get your site ready.
 
